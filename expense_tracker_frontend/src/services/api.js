@@ -76,8 +76,20 @@ export const api = {
   /** Delete category */
   deleteCategory: (id) => request(`/categories/${id}`, { method: "DELETE" }),
 
-  /** List expenses with optional filters (start_date, end_date, category_id) */
-  listExpenses: (filters) => request("/expenses/", { params: filters }),
+  /** List expenses with optional filters (start_date, end_date, category_id)
+   * Always normalize to an array to protect UI from runtime errors if backend returns unexpected shapes.
+   */
+  listExpenses: async (filters) => {
+    const data = await request("/expenses/", { params: filters });
+    // Normalize server response to array defensively
+    if (Array.isArray(data)) return data;
+    if (!data) return [];
+    // Some backends might wrap list in { items: [...] } or { data: [...] }
+    if (Array.isArray(data.items)) return data.items;
+    if (Array.isArray(data.data)) return data.data;
+    // Fallback: not an array, return empty list to avoid reduce/map errors
+    return [];
+  },
   /** Create expense */
   createExpense: (payload) => request("/expenses/", { method: "POST", body: payload }),
   /** Update expense */

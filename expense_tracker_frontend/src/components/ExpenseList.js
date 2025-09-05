@@ -38,9 +38,11 @@ export function ExpenseList({ onEdit }) {
     return m;
   }, [categories]);
 
+  // Defensive: ensure expenses is an array before reduce to prevent runtime errors.
+  const safeExpenses = Array.isArray(expenses) ? expenses : [];
   const total = useMemo(
-    () => expenses.reduce((acc, e) => acc + Number(e.amount || 0), 0),
-    [expenses]
+    () => safeExpenses.reduce((acc, e) => acc + Number(e.amount || 0), 0),
+    [safeExpenses]
   );
 
   const applyFilters = () => {
@@ -137,14 +139,14 @@ export function ExpenseList({ onEdit }) {
                     Loading...
                   </td>
                 </tr>
-              ) : expenses.length === 0 ? (
+              ) : safeExpenses.length === 0 ? (
                 <tr>
                   <td colSpan={5} style={td}>
                     No expenses found.
                   </td>
                 </tr>
               ) : (
-                expenses.map((e) => (
+                safeExpenses.map((e) => (
                   <tr key={e.id}>
                     <td style={td}>{e.expense_date}</td>
                     <td style={td}>
