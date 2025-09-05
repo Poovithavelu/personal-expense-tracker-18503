@@ -20,6 +20,10 @@ export function ExpenseList({ onEdit }) {
    *  - onEdit: function(expense) to open edit form
    */
   const { categories } = useCategories();
+
+  // Defensive: ensure categories is always treated as an array to prevent runtime errors
+  const safeCategories = Array.isArray(categories) ? categories : [];
+
   const [localFilters, setLocalFilters] = useState({
     start_date: "",
     end_date: "",
@@ -34,11 +38,12 @@ export function ExpenseList({ onEdit }) {
 
   const categoryMap = useMemo(() => {
     const m = new Map();
-    categories.forEach((c) => m.set(c.id, c.name));
+    // Use safeCategories instead of categories to avoid forEach on non-array
+    safeCategories.forEach((c) => m.set(c.id, c.name));
     return m;
-  }, [categories]);
+  }, [safeCategories]);
 
-  // Defensive: ensure expenses is an array before reduce to prevent runtime errors.
+  // Defensive: ensure expenses is an array before reduce/map to prevent runtime errors.
   const safeExpenses = Array.isArray(expenses) ? expenses : [];
   const total = useMemo(
     () => safeExpenses.reduce((acc, e) => acc + Number(e.amount || 0), 0),
@@ -107,7 +112,7 @@ export function ExpenseList({ onEdit }) {
             }
           >
             <option value="">All</option>
-            {categories.map((c) => (
+            {safeCategories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
